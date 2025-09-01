@@ -1,0 +1,50 @@
+# Core Flask and Web Framework
+Flask==2.3.3
+Werkzeug==2.3.7
+flask-cors==4.0.0
+
+# CrewAI for Multi-Agent System
+crewai==0.41.1
+crewai-tools==0.4.26
+
+# Machine Learning and Data Science
+scikit-learn==1.3.0
+pandas==2.0.3
+numpy==1.24.3
+xgboost==1.7.6
+joblib==1.3.2
+
+# Mathematical and Statistical Computing
+scipy==1.11.1
+
+# Date and Time Handling
+python-dateutil==2.8.2
+
+# Web Scraping and HTTP (for CrewAI tools)
+requests==2.31.0
+beautifulsoup4==4.12.2
+
+# Data Serialization
+PyYAML==6.0.1
+
+# Development and Testing (Optional)
+pytest==7.4.0
+pytest-flask==1.2.0
+
+# Environment Management (Optional)
+python-dotenv==1.0.0
+
+# Logging and Debugging
+colorama==0.4.6
+
+# Additional CrewAI Dependencies
+pydantic==2.4.2
+langchain==0.0.325
+langchain-community==0.0.38
+
+# JSON and Configuration
+jsonschema==4.19.0
+
+# Utility Libraries
+tqdm==4.66.1
+click==8.1.7

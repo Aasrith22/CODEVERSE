@@ -1,0 +1,43 @@
+{
+  "current_events": [
+    {
+      "name": "IT Conference",
+      "location": "Madhapur",
+      "impact_radius": 2,
+      "traffic_impact": 0.3,
+      "start_time": "09:00",
+      "end_time": "18:00"
+    },
+    {
+      "name": "Mall Opening Hours",
+      "location": "Kukatpally",
+      "impact_radius": 1,
+      "traffic_impact": 0.2,
+      "start_time": "10:00",
+      "end_time": "22:00"
+    }
+  ],
+  "recurring_events": [
+    {
+      "name": "School Hours",
+      "locations": ["all"],
+      "time_slots": ["08:00-09:00", "15:00-16:00"],
+      "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "impact": 0.2
+    },
+    {
+      "name": "Office Hours",
+      "locations": ["Madhapur", "Ameerpet", "Secunderabad"],
+      "time_slots": ["08:00-10:00", "17:00-19:00"],
+      "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "impact": 0.4
+    },
+    {
+      "name": "Weekend Shopping",
+      "locations": ["Kukatpally", "Ameerpet"],
+      "time_slots": ["11:00-14:00", "17:00-21:00"],
+      "days": ["Saturday", "Sunday"],
+      "impact": 0.3
+    }
+  ]
+}

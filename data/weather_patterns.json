@@ -1,0 +1,19 @@
+{
+  "current": {
+    "condition": "Very Sunny",
+    "temperature": 32,
+    "humidity": 65,
+    "visibility": "Good",
+    "impact_factor": 0.1
+  },
+  "forecast": [
+    {"hour": 1, "condition": "Very Sunny", "impact": 0.1},
+    {"hour": 2, "condition": "Very Sunny", "impact": 0.1},
+    {"hour": 3, "condition": "Rain", "impact": 0.4},
+    {"hour": 4, "condition": "Rain", "impact": 0.4},
+    {"hour": 5, "condition": "Very Sunny", "impact": 0.1},
+    {"hour": 6, "condition": "Very Sunny", "impact": 0.1},
+    {"hour": 7, "condition": "Very Cold", "impact": 0.15},
+    {"hour": 8, "condition": "Very Cold", "impact": 0.15}
+  ]
+}
