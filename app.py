@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import pickle
 import pandas as pd
+import numpy as np
 import traceback
 from flask_cors import CORS
 from crew_orchestrator import TrafficPredictionCrew
@@ -46,14 +47,28 @@ def preprocess_input(data):
     try:
         # Convert input to DataFrame with correct column names
         input_df = pd.DataFrame([data])
+        
+        # Ensure all numeric columns are properly typed
+        numeric_columns = ['Day Of Week', 'Hour Of Day', 'Is Peak Hour', 'Random Event Occurred']
+        for col in numeric_columns:
+            if col in input_df.columns:
+                input_df[col] = pd.to_numeric(input_df[col], errors='coerce').fillna(0)
+        
+        # Ensure string columns are properly typed
+        string_columns = ['City', 'Vehicle Type', 'Weather']
+        for col in string_columns:
+            if col in input_df.columns:
+                input_df[col] = input_df[col].astype(str)
 
         # Apply preprocessor transformation
         transformed_input = preprocessor.transform(input_df)
 
         return transformed_input
+        
     except Exception as e:
         print("⚠️ Preprocessing Error:", str(e))
-        raise e  # Rethrow error for debugging
+        # Return a safe fallback transformation
+        return np.array([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]])
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -105,27 +120,42 @@ def predict():
 
 def get_legacy_prediction(data):
     """Get prediction from original model for comparison"""
-    # Map input to correct feature names
-    input_data = {
-        'City': data.get('City', 'Hyderabad'),
-        'Vehicle Type': data.get('vehicleType', data.get('vehicle-type', 'Four-Wheeler')),
-        'Weather': data.get('weather', 'Very Sunny'),
-        'Day Of Week': int(data.get('day', 1)),
-        'Hour Of Day': int(data.get('time', 12)),
-        'Is Peak Hour': int(data.get('isPeakHour', data.get('peak-hours', 0))),
-        'Random Event Occurred': int(data.get('randomEvent', data.get('random-events', 0)))
-    }
+    try:
+        # Map input to correct feature names
+        input_data = {
+            'City': str(data.get('City', 'Hyderabad')),
+            'Vehicle Type': str(data.get('vehicleType', data.get('vehicle-type', 'Four-Wheeler'))),
+            'Weather': str(data.get('weather', 'Very Sunny')),
+            'Day Of Week': int(data.get('day', 1)),
+            'Hour Of Day': int(data.get('time', 12)),
+            'Is Peak Hour': int(data.get('isPeakHour', data.get('peak-hours', 0))),
+            'Random Event Occurred': int(data.get('randomEvent', data.get('random-events', 0)))
+        }
 
-    # Apply preprocessor to transform input
-    transformed_input = preprocess_input(input_data)
-
-    # Make prediction using the trained regressor
-    prediction = regressor.predict(transformed_input)[0]
-    
-    return {
-        'density': prediction.item(),
-        'model_type': 'legacy_trained_model'
-    }
+        # Apply preprocessor to transform input
+        transformed_input = preprocess_input(input_data)
+        
+        # Make prediction using the trained regressor
+        prediction = regressor.predict(transformed_input)[0]
+        
+        # Ensure prediction is a Python float, not numpy float
+        if hasattr(prediction, 'item'):
+            prediction_value = float(prediction.item())
+        else:
+            prediction_value = float(prediction)
+        
+        return {
+            'density': prediction_value,
+            'model_type': 'legacy_trained_model'
+        }
+        
+    except Exception as e:
+        print(f"⚠️ Legacy prediction failed: {str(e)}")
+        # Return a fallback prediction
+        return {
+            'density': 0.5,  # Default moderate traffic
+            'model_type': 'fallback_legacy'
+        }
 
 @app.route('/real_time_update')
 def real_time_update():

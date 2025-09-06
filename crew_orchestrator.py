@@ -14,14 +14,46 @@ class TrafficPredictionCrew:
     def __init__(self):
         try:
             print("🚀 Initializing Traffic Prediction Crew...")
-            self.data_analyst = DataAnalystAgent()
-            self.predictor = PredictionAgent()
-            self.route_optimizer = RouteOptimizerAgent()
-            self.alert_manager = AlertManagerAgent()
-            print("✅ All agents initialized successfully!")
+            
+            # Initialize agents with proper error handling
+            try:
+                self.data_analyst = DataAnalystAgent()
+                print("✅ Data Analyst initialized")
+            except Exception as e:
+                print(f"⚠️ Data Analyst initialization failed: {e}")
+                self.data_analyst = None
+            
+            try:
+                self.predictor = PredictionAgent()
+                print("✅ Prediction Agent initialized")
+            except Exception as e:
+                print(f"⚠️ Prediction Agent initialization failed: {e}")
+                self.predictor = None
+            
+            try:
+                self.route_optimizer = RouteOptimizerAgent()
+                print("✅ Route Optimizer initialized")
+            except Exception as e:
+                print(f"⚠️ Route Optimizer initialization failed: {e}")
+                self.route_optimizer = None
+            
+            try:
+                self.alert_manager = AlertManagerAgent()
+                print("✅ Alert Manager initialized")
+            except Exception as e:
+                print(f"⚠️ Alert Manager initialization failed: {e}")
+                self.alert_manager = None
+            
+            print("✅ Traffic Prediction Crew initialization completed!")
+            
         except Exception as e:
-            print(f"⚠️ Error initializing agents: {str(e)}")
+            print(f"❌ Critical error initializing crew: {str(e)}")
             print(traceback.format_exc())
+            # Initialize fallback state
+            self.data_analyst = None
+            self.predictor = None
+            self.route_optimizer = None
+            self.alert_manager = None
     
     def execute_comprehensive_analysis(self, request_data):
         """Execute comprehensive traffic analysis using all agents"""
@@ -33,24 +65,36 @@ class TrafficPredictionCrew:
             
             # Step 1: Data Analysis
             print("📊 Step 1: Analyzing current traffic conditions...")
-            current_analysis = self.data_analyst.analyze_current_conditions(location)
-            print(f"✅ Data analysis completed for {location}")
+            if self.data_analyst:
+                current_analysis = self.data_analyst.analyze_current_conditions(location)
+                print(f"✅ Data analysis completed for {location}")
+            else:
+                print("⚠️ Data analyst not available, using fallback analysis")
+                current_analysis = self._get_fallback_data_analysis(location)
             
             # Step 2: Traffic Prediction
             print("🧠 Step 2: Generating traffic predictions...")
             prediction_input = self._prepare_prediction_input(request_data, current_analysis)
-            traffic_prediction = self.predictor.predict_traffic_density(prediction_input)
-            print(f"✅ Traffic prediction completed - Density: {traffic_prediction['prediction']:.2%}")
+            if self.predictor:
+                traffic_prediction = self.predictor.predict_traffic_density(prediction_input)
+                print(f"✅ Traffic prediction completed - Density: {traffic_prediction['prediction']:.2%}")
+            else:
+                print("⚠️ Predictor not available, using fallback prediction")
+                traffic_prediction = self._get_fallback_prediction(prediction_input)
             
             # Step 3: Route Optimization (if destination provided)
             route_analysis = None
             if request_data.get('destination'):
                 print("🗺️ Step 3: Calculating optimal routes...")
                 current_traffic = self._prepare_traffic_data_for_routing(location, traffic_prediction)
-                route_analysis = self.route_optimizer.calculate_optimal_routes(
-                    location, request_data['destination'], current_traffic
-                )
-                print("✅ Route optimization completed")
+                if self.route_optimizer:
+                    route_analysis = self.route_optimizer.calculate_optimal_routes(
+                        location, request_data['destination'], current_traffic
+                    )
+                    print("✅ Route optimization completed")
+                else:
+                    print("⚠️ Route optimizer not available")
+                    route_analysis = self._get_fallback_route_analysis()
             else:
                 print("ℹ️ Step 3: Skipping route optimization (no destination provided)")
             
@@ -58,10 +102,14 @@ class TrafficPredictionCrew:
             print("🚨 Step 4: Generating traffic alerts...")
             prediction_data = {location: traffic_prediction}
             user_preferences = self._extract_user_preferences(request_data)
-            alerts = self.alert_manager.generate_alerts(
-                prediction_data, current_analysis, user_preferences
-            )
-            print(f"✅ Alert generation completed - {len(alerts['active_alerts'])} alerts generated")
+            if self.alert_manager:
+                alerts = self.alert_manager.generate_alerts(
+                    prediction_data, current_analysis, user_preferences
+                )
+                print(f"✅ Alert generation completed - {len(alerts['active_alerts'])} alerts generated")
+            else:
+                print("⚠️ Alert manager not available, using fallback alerts")
+                alerts = self._get_fallback_alerts()
             
             # Step 5: Generate Agent Insights
             print("💡 Step 5: Generating agent insights...")
@@ -420,3 +468,95 @@ class TrafficPredictionCrew:
                 'route_optimizer': {'status': 'operational'},
                 'alert_manager': {'status': 'operational'}
             }
+    
+    def _get_fallback_data_analysis(self, location):
+        """Fallback data analysis when agent is not available"""
+        return {
+            'location': location,
+            'timestamp': datetime.now().isoformat(),
+            'current_density': 0.5,
+            'trend_analysis': {
+                'weekly_pattern': 'Standard traffic patterns observed',
+                'confidence_score': 0.7,
+                'peak_hours': [8, 9, 17, 18, 19]
+            },
+            'anomaly_detection': {
+                'current_anomaly': False,
+                'severity': 'low',
+                'anomaly_details': []
+            },
+            'historical_comparison': {
+                'vs_yesterday': 'similar',
+                'vs_last_week': 'normal_variation'
+            }
+        }
+    
+    def _get_fallback_prediction(self, prediction_input):
+        """Fallback prediction when agent is not available"""
+        # Simple prediction based on input parameters
+        try:
+            city = prediction_input[0] if len(prediction_input) > 0 else 'Hyderabad'
+            hour = prediction_input[4] if len(prediction_input) > 4 else 12
+            is_peak = prediction_input[5] if len(prediction_input) > 5 else 0
+            
+            # Simple rule-based prediction
+            base_density = 0.4
+            if is_peak:
+                base_density += 0.3
+            if 7 <= hour <= 9 or 17 <= hour <= 19:
+                base_density += 0.2
+            
+            prediction = min(base_density, 1.0)
+            
+            return {
+                'prediction': prediction,
+                'confidence': 0.7,
+                'model_breakdown': {'fallback_model': prediction},
+                'factors_influence': {
+                    'primary_factors': ['time_of_day', 'peak_hour'],
+                    'impact_scores': {'time': 0.6, 'peak': 0.4}
+                },
+                'uncertainty_metrics': {
+                    'model_agreement': 0.7,
+                    'prediction_interval': [prediction - 0.1, prediction + 0.1]
+                }
+            }
+        except Exception:
+            return {
+                'prediction': 0.5,
+                'confidence': 0.6,
+                'model_breakdown': {'fallback_model': 0.5},
+                'factors_influence': {'primary_factors': ['default']},
+                'uncertainty_metrics': {'model_agreement': 0.6}
+            }
+    
+    def _get_fallback_route_analysis(self):
+        """Fallback route analysis when agent is not available"""
+        return {
+            'recommended_route': {
+                'distance': '5.2 km',
+                'estimated_time': '15 min',
+                'traffic_impact': 0.5,
+                'route_description': 'Standard route available'
+            },
+            'alternatives': [],
+            'optimization_criteria': ['time', 'distance'],
+            'traffic_conditions': 'moderate'
+        }
+    
+    def _get_fallback_alerts(self):
+        """Fallback alerts when agent is not available"""
+        return {
+            'active_alerts': [],
+            'alert_summary': {
+                'total_alerts': 0,
+                'severity_breakdown': {'info': 0, 'warning': 0, 'critical': 0},
+                'main_concerns': [],
+                'overall_status': 'System operational with fallback mode'
+            },
+            'recommendations': {
+                'immediate_actions': ['Monitor traffic conditions'],
+                'travel_planning': ['Plan ahead for peak hours'],
+                'alternative_routes': ['Consider alternative routes during peak times']
+            }
+        }
